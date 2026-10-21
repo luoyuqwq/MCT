@@ -1,0 +1,21 @@
+{
+  "game_source": "bmclapi",
+  "custom_mirror": "",
+  "custom_mirror_name": "自定义站点",
+  "mod_source": "domestic",
+  "version_isolation": true,
+  "download_threads": 16,
+  "java_path": "",
+  "game_dir": "",
+  "max_memory_mb": 4096,
+  "min_memory_mb": 512,
+  "extra_jvm_args": "",
+  "curseforge_api_key": "",
+  "last_version": "",
+  "show_snapshots": false,
+  "proxy": "",
+  "window_width": 854,
+  "window_height": 480,
+  "fullscreen": false,
+  "download_assets": true
+}

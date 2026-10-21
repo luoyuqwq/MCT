@@ -2,6 +2,8 @@
 
 > Designed By **Cache_Rikka**
 
+**下载**：Windows x64 单文件版见 [Releases](https://github.com/luoyuqwq/MCT/releases/latest)。
+
 用 C++17 写的**终端内 Minecraft 启动器**，界面与操作参照 HMCL / PCL2，但不依赖任何 GUI：
 纯 ANSI 渲染、方向键选择、下载进度条，在 Windows Terminal / cmd / PowerShell / Linux 终端里都能跑。
 
@@ -35,9 +37,9 @@
 | 皮肤 | 查询当前皮肤、上传本地 PNG（64×64 / 64×32，classic / slim）、恢复默认 |
 | 下载游戏 | 版本清单 + 原版客户端 + 全部库 + 资源索引 + 资源对象 + natives 解压，支持 Fabric / Quilt / Forge / NeoForge |
 | 下载模组 | Modrinth、CurseForge、国内镜像（MCIM），按游戏版本与加载器过滤，自动安装必需依赖，可查看/删除已装模组 |
-| 启动 | Java 自动探测、classpath 构建、JVM/游戏参数按版本 JSON 规则生成、启动后等待退出并回显退出码 |
+| 启动 | Java 自动探测与一键安装、classpath 构建、JVM/游戏参数按版本 JSON 规则生成、启动后等待退出并回显退出码 |
 | 目录 | 游戏安装目录可自定义（默认 `<数据目录>/game`），切换时可选自动复制现有 `versions/libraries/assets/mods` |
-| 设置 | 下载源、自定义站点、模组源、版本隔离、线程数、内存、Java 路径、额外 JVM 参数、快照显示、游戏目录 |
+| 设置 | 下载源、自定义站点、模组源、版本隔离、线程数、内存、Java 路径、额外 JVM 参数、快照显示、游戏目录、安装 Java |
 | 镜像 | 支持自建静态资源站（含生成脚本），见 [docs/MIRROR.md](docs/MIRROR.md) |
 
 ### 菜单层级（与需求对应）
@@ -177,6 +179,24 @@ mct --help
 
 ---
 
+## Java 运行时
+
+启动或安装版本时会读取 version JSON 的 `javaVersion.majorVersion`，自动在本机寻找合适的 Java；
+找不到（或版本过低）时会提示一键安装：
+
+- 自动选择 Temurin JRE：Java 8 / 17 / 21（按版本要求，必要时向上兼容）
+- 下载优先走**清华 TUNA 的 Adoptium 镜像**，失败自动回退 **Azul Zulu**、**Microsoft OpenJDK**
+- 安装到 `<数据目录>/java/temurin-<major>`，之后会被自动探测，不需要手填路径
+- 也可以在 `④ 设置 → 安装 Java 运行时` 手动装，或命令行：
+
+```bat
+mct --install-java 17
+```
+
+> 自动安装目前只支持 Windows；Linux/macOS 请用系统包管理器安装 JDK。
+
+---
+
 ## 下载模组
 
 入口：`③ 下载模组`（或在安装完成时选择继续），先选实例，再选来源：
@@ -206,6 +226,7 @@ mct --help
 | CurseForge API Key | CurseForge 源必填 |
 | 版本隔离 | **开启**：`versions/<id>` 作为游戏目录，每个版本独立 `mods/`、`saves/`、`options.txt`（HMCL 风格）；**关闭**：统一使用游戏根目录 |
 | 游戏目录 | 自定义游戏安装根目录（默认 `<数据目录>/game`），可指向其它磁盘或已有的 `.minecraft`；切换时可选择复制现有文件 |
+| 安装 Java 运行时 | 一键下载 Temurin JRE（8 / 17 / 21），装到 `<数据目录>/java`，自动被识别 |
 | 下载线程 | 1–64，默认 16 |
 | 最大/最小内存 | 传给 JVM 的 `-Xmx` / `-Xms` |
 | Java 路径 | 留空自动探测（PATH、JAVA_HOME、`<home>/java`、常见安装目录） |
@@ -244,6 +265,7 @@ scp -r D:\mirror/* user@host:/var/www/mirror/
 | `--loader <name>` | `vanilla` / `fabric` / `quilt` / `forge` / `neoforge` |
 | `--loader-version <v>` | 指定加载器版本，省略为最新 |
 | `--launch <实例>` | 无界面启动已安装的实例（使用当前账号） |
+| `--install-java <版本>` | 自动下载安装 Java（8 / 17 / 21），例如 `--install-java 17` |
 | `--version` / `--help` | 版本 / 帮助 |
 
 ---
@@ -333,7 +355,9 @@ build/mct_probe.exe
 
 ## 常见问题
 
-**启动提示找不到 Java**：安装 JDK 21（Temurin / Zulu / Microsoft Build of OpenJDK），或在设置里指定 `java.exe`。1.17+ 需要 Java 17+，1.20.5+ 推荐 21。Forge/NeoForge 安装器也需要 Java。
+**启动提示找不到 Java**：在弹窗里选择自动安装即可（Temurin JRE，TUNA 镜像），也可以到
+`④ 设置 → 安装 Java 运行时` 手动安装，或填自己的 `java.exe` 路径。1.17+ 需要 Java 17+，
+1.20.5+ 推荐 21。
 
 **设备码登录一直提示等待/超时**：确认终端显示的代码与 `microsoft.com/link` 输入的完全一致，且使用的是拥有
 Minecraft 的微软账号。每次轮询的 HTTP 状态与微软返回的错误都会写进 `<数据目录>/logs/mct.log`（搜索“设备码轮询”），
